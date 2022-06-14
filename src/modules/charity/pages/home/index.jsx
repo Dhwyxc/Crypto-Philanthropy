@@ -19,7 +19,7 @@ const HomePage = () => {
   // getAllCharity();
   useEffect(() => {
     setInterval(() => {
-      getAllCharity();
+      // getAllCharity();
     }, 3000);
   }, [getAllCharity]);
   const dataChart = useMemo(() => {

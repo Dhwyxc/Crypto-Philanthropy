@@ -6,12 +6,12 @@ let BASE_URL_EMBED = "http://localhost:8000/";
 let BASE_URL_WS = "http://localhost:5000/";
 let BASE_URL_JS_EMBED = "http://localhost:5000/";
 let API_IMGBB_KEY = "ef456e4869f97e66128f272ec46b4d34";
-if (import.meta.NODE_ENV === "production") {
-  BASE_URL = "https://livechat.nnnhan2804.online/";
-  BASE_URL_EMBED = "https://embed.nnnhan2804.online/";
-  BASE_URL_WS = "https://livechat.nnnhan2804.online/";
-  BASE_URL_JS_EMBED = "https://livechat.nnnhan2804.online/";
-}
+// if (import.meta.NODE_ENV === "production") {
+//   BASE_URL = "https://livechat.nnnhan2804.online/";
+//   BASE_URL_EMBED = "https://embed.nnnhan2804.online/";
+//   BASE_URL_WS = "https://livechat.nnnhan2804.online/";
+//   BASE_URL_JS_EMBED = "https://livechat.nnnhan2804.online/";
+// }
 export {
   BASE_URL,
   BASE_URL_WS,

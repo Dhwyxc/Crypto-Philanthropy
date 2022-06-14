@@ -1,9 +1,9 @@
 import Web3 from "web3";
-import { TO_DO_LIST_ABI, TO_DO_LIST_ADDRESS } from "./config";
+import { CHARITY_LIST_ABI, CHARITY_LIST_ADDRESS } from "./config";
 
 class ConnectWeb3 {
   web3 = new Web3(Web3.givenProvider || "http://localhost:8545");
-  todoList = new this.web3.eth.Contract(TO_DO_LIST_ABI, TO_DO_LIST_ADDRESS);
+  todoList = new this.web3.eth.Contract(CHARITY_LIST_ABI, CHARITY_LIST_ADDRESS);
 
   async getAllTodoTask() {
     const taskCount = await this.todoList.methods.taskCount().call();

@@ -3,11 +3,13 @@ import { createSlice } from "@reduxjs/toolkit";
 export interface authState {
   isAuth: boolean;
   account: string;
+  address: string;
 }
 
 const initialState: authState = {
   isAuth: false,
   account: "",
+  address: "",
 };
 
 export const authSlice = createSlice({
@@ -35,6 +37,9 @@ export const authSlice = createSlice({
     users: (state, action) => {
       state.users = action.payload?.users;
     },
+    address: (state, action) => {
+      state.address = action.payload;
+    },
     logout: (state) => {
       state.isAuth = false;
       state.account = "";
@@ -52,7 +57,7 @@ export const authSlice = createSlice({
 });
 
 // Action creators are generated for each case reducer function
-export const { login, logout, updateToken, users, updateUser } =
+export const { login, logout, updateToken, users, updateUser, address } =
   authSlice.actions;
 
 export default authSlice.reducer;

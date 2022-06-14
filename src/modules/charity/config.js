@@ -1,5 +1,6 @@
-export const TO_DO_LIST_ADDRESS = "0x45F336f1b6384Cb1875bb6695DbD5Ac8Da3A1acf";
-export const TO_DO_LIST_ABI = [
+export const CHARITY_LIST_ADDRESS =
+  "0x192284f5dA909D03FF454113EbaDC7CC1625373D";
+export const CHARITY_LIST_ABI = [
   {
     inputs: [
       {
@@ -185,6 +186,25 @@ export const TO_DO_LIST_ABI = [
       },
     ],
     name: "createCharity",
+    outputs: [],
+    stateMutability: "payable",
+    type: "function",
+    payable: true,
+  },
+  {
+    inputs: [
+      {
+        internalType: "string",
+        name: "_message",
+        type: "string",
+      },
+      {
+        internalType: "address",
+        name: "too",
+        type: "address",
+      },
+    ],
+    name: "createDonate",
     outputs: [],
     stateMutability: "payable",
     type: "function",

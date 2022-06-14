@@ -1,7 +1,10 @@
-import { TO_DO_LIST_ABI, TO_DO_LIST_ADDRESS } from "@config/web3/config";
+import { CHARITY_LIST_ABI, CHARITY_LIST_ADDRESS } from "@config/web3/config";
 import { web3 } from "@config/web3/index";
 
-const PollContract = new web3.eth.Contract(TO_DO_LIST_ABI, TO_DO_LIST_ADDRESS);
+const PollContract = new web3.eth.Contract(
+  CHARITY_LIST_ABI,
+  CHARITY_LIST_ADDRESS
+);
 
 export const createPoll = async (data) => {
   console.log(data);
