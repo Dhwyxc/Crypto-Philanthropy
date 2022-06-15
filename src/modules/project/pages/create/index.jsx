@@ -1,5 +1,5 @@
 import React from "react";
-import { Button, Checkbox, Form, Input, Upload } from "antd";
+import { Button, Checkbox, Form, Input, InputNumber, Upload } from "antd";
 import { LoadingOutlined, PlusOutlined } from "@ant-design/icons";
 import CustomePageHeader from "@components/CustomePageHeader";
 import useCreateProject from "@modules/project/hooks/mutate/useCreateProject";
@@ -25,12 +25,12 @@ const CreateProject = () => {
   const onFinishFailed = (errorInfo) => {
     console.log("Failed:", errorInfo);
   };
-  const uploadButton = (
-    <div>
-      {false ? <LoadingOutlined /> : <PlusOutlined />}
-      <div style={{ marginTop: 8 }}>Upload</div>
-    </div>
-  );
+  // const uploadButton = (
+  //   <div>
+  //     {false ? <LoadingOutlined /> : <PlusOutlined />}
+  //     <div style={{ marginTop: 8 }}>Upload</div>
+  //   </div>
+  // );
   return (
     <>
       <CustomePageHeader
@@ -42,7 +42,7 @@ const CreateProject = () => {
           },
           {
             title: "Dự án",
-            link: "/webs",
+            link: "/project",
           },
           {
             title: "Tạo dự án",
@@ -52,10 +52,10 @@ const CreateProject = () => {
       <Form
         name="basic"
         labelCol={{
-          span: 4,
+          span:5,
         }}
         wrapperCol={{
-          span: 12,
+          span: 15,
         }}
         initialValues={{
           remember: true,
@@ -70,33 +70,46 @@ const CreateProject = () => {
           rules={[
             {
               required: true,
-              message: "Please input your username!",
+              message: "Vui lòng nhập tên dự án từ thiện!",
             },
           ]}
         >
           <Input />
         </Form.Item>
-        <SingleImageUpload label="Logo" name="logo" isPreview="false" />
+        <SingleImageUpload label="Ảnh" name="logo" isPreview="false" style={{ width:"100%"}}/>
+        <Form.Item
+          label="Số tiền kêu gọi"
+          name="target"
+          rules={[
+            {
+              required: true,
+              message: "Vui lòng nhập số tiền dự án từ thiện kêu gọi!",
+            },
+          ]}
+        >
+          <InputNumber min={10} style={{ width:"100%" }}/>
+        </Form.Item>
         <Form.Item
           label="Miêu tả"
           name="desc"
           rules={[
             {
               required: true,
-              message: "Please input your password!",
+              message: "Vui lòng nhập miêu tả về dự án từ thiện!",
             },
           ]}
         >
-          <Input.TextArea />
+          <Input.TextArea style={{ height:"300px" }}/>
         </Form.Item>
+
         <Form.Item
           wrapperCol={{
-            offset: 8,
+            offset: 5,
             span: 16,
           }}
         >
           <Button type="primary" htmlType="submit">
-            Submit
+            SUBMIT
           </Button>
         </Form.Item>
       </Form>

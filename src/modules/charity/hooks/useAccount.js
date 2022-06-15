@@ -33,22 +33,22 @@ const useAccount = () => {
   );
 
   const getTxByWallet = async (wallet) => {
-    alert(wallet);
+    // alert(wallet);
     let n = await conn.current.web3.eth.getBlockNumber();
-    console.log({ n });
+    // console.log({ n });
     let txs = [];
     for (let i = 0; i <= n; i++) {
       let block = await conn.current.web3.eth.getBlock(i, true);
-      console.log({ block });
+      // console.log({ block });
       for (let j = 0; j < block.transactions?.length; j++) {
         if (block.transactions[j].from === wallet && block.transactions[j].to)
-          txs.push(block.transactions[j]);
+          txs.push({ ...block.transactions[j], timestamp: block?.timestamp });
       }
     }
     return txs;
   };
   const charityDeposit = async (value = 10, message, ownerAddress) => {
-    alert(ownerAddress);
+    // alert(ownerAddress);
     console.log({ method: conn.current.todoList.methods });
     // conn.current.todoList.methods.deposit(defaultAccount, 1, 25);
     return new Promise((resolve, reject) => {

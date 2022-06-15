@@ -12,12 +12,21 @@ import {
   InputNumber,
   message,
   Modal,
+  Progress,
+  Space,
   Table,
 } from "antd";
+import { SearchOutlined } from "@ant-design/icons";
+import Layout from "antd/lib/layout/layout";
 import { ethers } from "ethers";
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useParams } from "react-router";
-
+import { height } from "tailwindcss/defaulttheme";
+import Highlighter from "react-highlight-words";
+import moment from "moment";
+import { Doughnut } from "react-chartjs-2";
+import { Chart as ChartJS, ArcElement, Tooltip, Legend } from "chart.js";
+ChartJS.register(ArcElement, Tooltip, Legend);
 const ShowProject = () => {
   const { id } = useParams();
   console.log(id);
@@ -53,12 +62,12 @@ const ShowProject = () => {
       setTrans(rs);
       refOk.current = true;
     };
-    console.log("chay get txs");
+    // console.log("chay get txs");
     if (!refOk.current) {
       getTxs();
     }
   }, [id, getTxByWallet, projectShow]);
-  console.log({ trans });
+  // console.log({ trans });
 
   const [form] = Form.useForm();
   // const ethValue = Form.useWatch("eth", form);
@@ -93,6 +102,131 @@ const ShowProject = () => {
   const onFinishFailed = (errorInfo) => {
     console.log("Failed:", errorInfo);
   };
+  const [searchText, setSearchText] = useState("");
+  const [searchedColumn, setSearchedColumn] = useState("");
+  const searchInput = useRef(null);
+
+  const dataChart = useMemo(() => {
+    const totalDonor = projectShow?.donor?.reduce((total, current) => {
+      total += current?.amount;
+      return total;
+    }, 0);
+    const totalOut = trans?.reduce((total, current) => {
+      total += current?.value;
+      return total;
+    }, 0);
+    return [totalOut, totalDonor];
+  }, [trans, projectShow]);
+  const dataProgress = useMemo(() => {
+    const totalDonor = projectShow?.donor?.reduce((total, current) => {
+      total += current?.amount;
+      return total;
+    }, 0);
+
+    const percent = Math.round((totalDonor / projectShow?.target) * 100);
+    return percent;
+  }, [projectShow]);
+
+  const handleSearch = (selectedKeys, confirm, dataIndex) => {
+    confirm();
+    setSearchText(selectedKeys[0]);
+    setSearchedColumn(dataIndex);
+  };
+  const handleReset = (clearFilters) => {
+    clearFilters();
+    setSearchText("");
+  };
+  const getColumnSearchProps = (dataIndex) => ({
+    filterDropdown: ({
+      setSelectedKeys,
+      selectedKeys,
+      confirm,
+      clearFilters,
+    }) => (
+      <div
+        style={{
+          padding: 8,
+        }}
+      >
+        <Input
+          ref={searchInput}
+          placeholder={`Search ${dataIndex}`}
+          value={selectedKeys[0]}
+          onChange={(e) =>
+            setSelectedKeys(e.target.value ? [e.target.value] : [])
+          }
+          onPressEnter={() => handleSearch(selectedKeys, confirm, dataIndex)}
+          style={{
+            marginBottom: 8,
+            display: "block",
+          }}
+        />
+        <Space>
+          <Button
+            type="primary"
+            onClick={() => handleSearch(selectedKeys, confirm, dataIndex)}
+            icon={<SearchOutlined />}
+            size="small"
+            style={{
+              width: 90,
+            }}
+          >
+            Search
+          </Button>
+          <Button
+            onClick={() => clearFilters && handleReset(clearFilters)}
+            size="small"
+            style={{
+              width: 90,
+            }}
+          >
+            Reset
+          </Button>
+          <Button
+            type="link"
+            size="small"
+            onClick={() => {
+              confirm({
+                closeDropdown: false,
+              });
+              setSearchText(selectedKeys[0]);
+              setSearchedColumn(dataIndex);
+            }}
+          >
+            Filter
+          </Button>
+        </Space>
+      </div>
+    ),
+    filterIcon: (filtered) => (
+      <SearchOutlined
+        style={{
+          color: filtered ? "#1890ff" : undefined,
+        }}
+      />
+    ),
+    onFilter: (value, record) =>
+      record[dataIndex].toString().toLowerCase().includes(value.toLowerCase()),
+    onFilterDropdownVisibleChange: (visible) => {
+      if (visible) {
+        setTimeout(() => searchInput.current?.select(), 100);
+      }
+    },
+    render: (text) =>
+      searchedColumn === dataIndex ? (
+        <Highlighter
+          highlightStyle={{
+            backgroundColor: "#ffc069",
+            padding: 0,
+          }}
+          searchWords={[searchText]}
+          autoEscape
+          textToHighlight={text ? text.toString() : ""}
+        />
+      ) : (
+        text
+      ),
+  });
   const columns = [
     {
       title: "Địa chỉ nhận",
@@ -101,10 +235,22 @@ const ShowProject = () => {
     },
 
     {
-      title: "Amount",
+      title: "Số lượng",
       dataIndex: "value",
       key: "value",
       render: (txt) => <span>{ethers.utils.formatEther(txt)}</span>,
+      sorter: (a, b) => a.value - b.value,
+      sortDirections: ["descend", "ascend"],
+    },
+    {
+      title: "Thời gian",
+      dataIndex: "timestamp",
+      key: "timestamp",
+      render: (txt, record) => (
+        <span>{moment(txt).format("DD/MM/YYYY H:m:s")}</span>
+      ),
+      sorter: (a, b) => new Date(a.timestamp) - new Date(b.timestamp),
+      sortDirections: ["descend", "ascend"],
     },
     {
       title: "Transaction Hash",
@@ -115,14 +261,16 @@ const ShowProject = () => {
   ];
   const columns2 = [
     {
-      title: "Tên người donate",
+      title: "Tên",
       dataIndex: "name",
       key: "name",
+      ...getColumnSearchProps("name"),
     },
     {
       title: "Địa chỉ ví",
       dataIndex: "fromAddress",
       key: "fromAddress",
+      ...getColumnSearchProps("fromAddress"),
     },
     {
       title: "Số lượng",
@@ -133,30 +281,51 @@ const ShowProject = () => {
           {txt} {record?.currency}
         </span>
       ),
+      // ...getColumnSearchProps("value"),
+      sorter: (a, b) => a.amount - b.amount,
+      sortDirections: ["descend", "ascend"],
     },
     {
-      title: "Message để lại",
+      title: "Lời nhắn",
       dataIndex: "message",
       key: "message",
-      render: (txt) => <a href={txt}>{txt}</a>,
+      render: (txt) => <span>{txt}</span>,
     },
 
     {
-      title: "Ngày tạo",
+      title: "Thời gian",
+      // width: 200,
       dataIndex: "date",
       key: "date",
-      render: (txt) => <a href={txt}>{txt}</a>,
+      // render: (txt) => <span>{txt}</span>,
+      sorter: (a, b) => new Date(a.date) - new Date(b.date),
+      sortDirections: ["descend", "ascend"],
+      render: (txt, record) => (
+        <span>{moment(txt).format("DD/MM/YYYY H:m:s")}</span>
+      ),
     },
     {
       title: "Transaction Hash",
+      // width: 520,
       dataIndex: "txHash",
       key: "txHash",
-      render: (txt) => <a href={txt}>{txt?.substring(0, 10)} ...</a>,
+      render: (txt) => <a href={txt}> {txt}</a>,
     },
   ];
-
+  const data = {
+    labels: ["Đã chuyển đi(ETH)", "Còn lại(ETH)"],
+    datasets: [
+      {
+        label: "charity",
+        data: dataChart,
+        backgroundColor: ["rgba(46, 204, 113, 1)", "rgba(247, 202, 24, 0.8)"],
+        borderColor: ["rgba(30, 130, 76,  1)", "rgba(189, 155, 25, 1)"],
+        borderWidth: 1,
+      },
+    ],
+  };
   return (
-    <div>
+    <Layout>
       <Modal
         title="Quyên góp"
         visible={isModalVisible}
@@ -166,21 +335,15 @@ const ShowProject = () => {
         <Form
           name="basic"
           labelCol={{
-            span: 4,
+            span: 6,
           }}
-          //   wrapperCol={{
-          //     span: 16,
-          //   }}
-          //   initialValues={{
-          //     remember: true,
-          //   }}
           onFinish={onFinish}
           onFinishFailed={onFinishFailed}
           autoComplete="off"
         >
           <Form.Item label={"Tên của bạn"} name="name">
             {/* <Input /> */}
-            <Input.TextArea />
+            <Input />
           </Form.Item>
           <Form.Item
             label={"Số lượng ETH"}
@@ -193,25 +356,16 @@ const ShowProject = () => {
             ]}
           >
             {/* <Input /> */}
-            <InputNumber />
+            <InputNumber min={0} style={{ width: "100%" }} />
           </Form.Item>
 
-          <Form.Item
-            label="Lời nhắn để lại"
-            name="message"
-            rules={[
-              {
-                required: true,
-                message: "Vui lòng để lại lời nhắn",
-              },
-            ]}
-          >
+          <Form.Item label="Lời nhắn để lại" name="message">
             <Input.TextArea />
           </Form.Item>
 
           <Form.Item
             wrapperCol={{
-              offset: 8,
+              offset: 6,
               span: 16,
             }}
           >
@@ -230,7 +384,7 @@ const ShowProject = () => {
           },
           {
             title: "Dự án",
-            link: "/webs",
+            link: "/project",
           },
           {
             title: projectShow?.name,
@@ -244,20 +398,38 @@ const ShowProject = () => {
           </>
         }
       />
-      <img alt="" className="w-full h-[300px]" src={projectShow?.logo} />
-      <h1>Miêu tả về dự án này</h1>
-      <p className="text-black">{projectShow?.desc}</p>
-      <h1 className="text-2xl">Danh sách tổ chức nhận được donate</h1>
+      <div className="flex justify-between items-center">
+        <div className="w-full">
+          <img
+            alt=""
+            className="w-full h-[500px] rounded-xl"
+            src={projectShow?.logo}
+          />
+          <h1 className="text-2xl mt-5">
+            Tiến độ hoàn thành dự án từ thiện: {" "}
+            {`${dataChart[1]}/${projectShow?.target}`}{"(ETH)"}
+          </h1>
+          <Progress trailColor="#ccc" percent={dataProgress} />
+        </div>
+        <div className="w-[35%]">
+          <Doughnut data={data} />
+        </div>
+      </div>
+
+      <h1 className="text-black text-2xl mt-5">Miêu tả về dự án này</h1>
+      <p className="text-black text-lg">{projectShow?.desc}</p>
+
+      <h1 className="text-2xl mt-5">Danh sách số tiền đã chuyển đi</h1>
       <Table
-        scroll={{
-          y: 240,
-        }}
         dataSource={trans}
         columns={columns}
       />
-      <h1 className="text-2xl">Danh sách tổ chức donate</h1>
-      <Table dataSource={projectShow?.donor} columns={columns2} />
-    </div>
+      <h1 className="text-2xl mt-5">Danh sách quyên góp</h1>
+      <Table
+        dataSource={projectShow?.donor}
+        columns={columns2}
+      />
+    </Layout>
   );
 };
 
